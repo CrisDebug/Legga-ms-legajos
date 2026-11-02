@@ -14,6 +14,8 @@ import cl.legga.legajos.categoria.entity.Categoria;
 import cl.legga.legajos.exception.RecursoNoEncontradoException;
 // Mantiene el repositorio de Categoria en su ubicación actual.
 import cl.legga.legajos.categoria.repository.CategoriaRepository;
+//
+import cl.legga.legajos.outbox.OutboxEventService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,12 +27,15 @@ public class LegajoService {
 
     private final LegajoRepository legajoRepository;
     private final CategoriaRepository categoriaRepository;
+    private final OutboxEventService outboxEventService;
 
     public LegajoService(
             LegajoRepository legajoRepository,
-            CategoriaRepository categoriaRepository) {
+            CategoriaRepository categoriaRepository,
+            OutboxEventService outboxEventService) {
         this.legajoRepository = legajoRepository;
         this.categoriaRepository = categoriaRepository;
+        this.outboxEventService = outboxEventService;
     }
 
     public List<Legajo> listar() {
@@ -62,7 +67,46 @@ public class LegajoService {
         legajo.setCategoria(categoria);
         legajo.setEstado("ACTIVO");
 
-        return legajoRepository.save(legajo);
+        // Guardar el legajo y obtener el UUID generado.
+        Legajo legajoCreado = legajoRepository.save(legajo);
+
+        // Construir el payload JSON del evento AUD-01.
+        String payloadJson = """
+                {
+                  "eventType": "AUD-01",
+                  "action": "LEGajo_CREATED",
+                  "aggregateId": "%s",
+                  "titulo": "%s",
+                  "categoriaId": "%s",
+                  "actor": "%s"
+                }
+                """.formatted(
+                legajoCreado.getId(),
+                escaparJson(legajoCreado.getTitulo()),
+                categoria.getId(),
+                escaparJson(legajoCreado.getCreadoPor()));
+
+        // Registrar el evento dentro de la misma transacción.
+        outboxEventService.registrarEvento(
+                "AUD-01",
+                "LEGAJO",
+                legajoCreado.getId(),
+                payloadJson);
+
+        return legajoCreado;
+    }
+
+    private String escaparJson(String valor) {
+        if (valor == null) {
+            return "";
+        }
+
+        return valor
+                .replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\n", "\\n")
+                .replace("\r", "\\r")
+                .replace("\t", "\\t");
     }
 
     private void validarEstado(String estado) {
