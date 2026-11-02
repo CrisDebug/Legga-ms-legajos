@@ -59,3 +59,7 @@ Los informes técnicos y documentos del proyecto se organizan en la carpeta `/do
 La aplicación utiliza variables de entorno para configurar la conexión a PostgreSQL.
 
 No se deben almacenar credenciales directamente en el repositorio.
+
+## evidencia
+
+- [Hito técnico: Creación de legajo y persistencia Outbox](docs/hitos-tecnicos/legajo%20create%20outbox/README.md)
