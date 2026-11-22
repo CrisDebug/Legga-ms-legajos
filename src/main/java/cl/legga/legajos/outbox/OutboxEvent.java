@@ -60,4 +60,61 @@ public class OutboxEvent {
         this.status = "PENDING";
         this.attempts = 0;
     }
+
+    public void marcarEnProceso() {
+        this.status = "PROCESSING";
+        this.lastError = null;
+    }
+
+    public void marcarPublicado() {
+        this.status = "PUBLISHED";
+        this.publishedAt = OffsetDateTime.now();
+        this.lastError = null;
+    }
+
+    public void registrarError(String error, int maxIntentos) {
+        this.attempts = this.attempts + 1;
+        this.lastError = error;
+        this.status = this.attempts >= maxIntentos ? "FAILED" : "PENDING";
+    }
+
+    public UUID getEventId() {
+        return eventId;
+    }
+
+    public String getEventType() {
+        return eventType;
+    }
+
+    public String getAggregateType() {
+        return aggregateType;
+    }
+
+    public UUID getAggregateId() {
+        return aggregateId;
+    }
+
+    public String getPayload() {
+        return payload;
+    }
+
+    public OffsetDateTime getOccurredAt() {
+        return occurredAt;
+    }
+
+    public OffsetDateTime getPublishedAt() {
+        return publishedAt;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public Integer getAttempts() {
+        return attempts;
+    }
+
+    public String getLastError() {
+        return lastError;
+    }
 }

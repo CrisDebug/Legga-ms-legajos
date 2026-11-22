@@ -1,7 +1,7 @@
 
 package cl.legga.legajos.legajo.entity;
 
-// Importa Categoria desde su ubicación actual.
+// Importa Categoria desde su ubicaciÃ³n actual.
 import cl.legga.legajos.categoria.entity.Categoria;
 import jakarta.persistence.*;
 import java.time.OffsetDateTime;
@@ -20,6 +20,9 @@ public class Legajo {
 
     @Column(length = 500)
     private String descripcion;
+
+    @Column(name = "institucion_id", nullable = false, updatable = false)
+    private UUID institucionId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "categoria_id", nullable = false)
@@ -100,6 +103,14 @@ public class Legajo {
         this.creadoPor = creadoPor;
     }
 
+    public UUID getInstitucionId() {
+        return institucionId;
+    }
+
+    public void setInstitucionId(UUID institucionId) {
+        this.institucionId = institucionId;
+    }
+
     public OffsetDateTime getCreatedAt() {
         return createdAt;
     }
@@ -108,3 +119,4 @@ public class Legajo {
         return updatedAt;
     }
 }
+

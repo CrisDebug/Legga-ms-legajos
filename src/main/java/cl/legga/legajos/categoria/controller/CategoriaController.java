@@ -1,11 +1,13 @@
+
 package cl.legga.legajos.categoria.controller;
 
 import cl.legga.legajos.categoria.entity.Categoria;
 import cl.legga.legajos.categoria.service.CategoriaService;
+
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -19,8 +21,12 @@ public class CategoriaController {
     }
 
     @GetMapping
-    public List<Categoria> listar() {
-        return categoriaService.listar();
+    public Page<Categoria> listar(
+            @RequestParam(required = false) Boolean activa,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "100") int size) {
+
+        return categoriaService.listar(activa, page, size);
     }
 
     @GetMapping("/{id}")

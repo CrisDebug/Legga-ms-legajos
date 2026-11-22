@@ -1,10 +1,15 @@
+
 package cl.legga.legajos.categoria.service;
 
 import cl.legga.legajos.categoria.entity.Categoria;
 import cl.legga.legajos.categoria.repository.CategoriaRepository;
-import org.springframework.stereotype.Service;
 import cl.legga.legajos.exception.RecursoNoEncontradoException;
-import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
 import java.util.UUID;
 
 @Service
@@ -16,8 +21,23 @@ public class CategoriaService {
         this.categoriaRepository = categoriaRepository;
     }
 
-    public List<Categoria> listar() {
-        return categoriaRepository.findAll();
+    /**
+     * Consulta categorías con filtro opcional y paginación.
+     */
+    public Page<Categoria> listar(Boolean activa, int page, int size) {
+
+        if (page < 0 || size <= 0) {
+            throw new IllegalArgumentException(
+                    "Los parámetros de paginación no son válidos");
+        }
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        if (activa == null) {
+            return categoriaRepository.findAll(pageable);
+        }
+
+        return categoriaRepository.findByActiva(activa, pageable);
     }
 
     public Categoria buscarPorId(UUID id) {
@@ -26,11 +46,15 @@ public class CategoriaService {
     }
 
     public Categoria crear(Categoria categoria) {
-        if (categoriaRepository.existsByNombreIgnoreCase(categoria.getNombre())) {
-            throw new IllegalArgumentException("Ya existe una categoría con ese nombre");
+
+        if (categoriaRepository.existsByNombreIgnoreCase(
+                categoria.getNombre())) {
+            throw new IllegalArgumentException(
+                    "Ya existe una categoría con ese nombre");
         }
 
         categoria.setId(null);
+
         return categoriaRepository.save(categoria);
     }
 }
