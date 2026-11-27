@@ -3,6 +3,8 @@ package cl.legga.legajos.categoria.controller;
 
 import cl.legga.legajos.categoria.entity.Categoria;
 import cl.legga.legajos.categoria.service.CategoriaService;
+import cl.legga.legajos.identidad.dto.ContextoIdentidadRequest;
+import cl.legga.legajos.identidad.service.IdentidadService;
 
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -15,9 +17,13 @@ import java.util.UUID;
 public class CategoriaController {
 
     private final CategoriaService categoriaService;
+    private final IdentidadService identidadService;
 
-    public CategoriaController(CategoriaService categoriaService) {
+    public CategoriaController(
+            CategoriaService categoriaService,
+            IdentidadService identidadService) {
         this.categoriaService = categoriaService;
+        this.identidadService = identidadService;
     }
 
     @GetMapping
@@ -36,7 +42,16 @@ public class CategoriaController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Categoria crear(@RequestBody Categoria categoria) {
-        return categoriaService.crear(categoria);
+    public Categoria crear(
+            @RequestBody Categoria categoria,
+            @RequestHeader("X-LEGGA-TENANT-ID") String tenantId,
+            @RequestHeader("X-LEGGA-OBJECT-ID") String objectId) {
+
+        var contexto = identidadService.consultarContexto(
+                new ContextoIdentidadRequest(tenantId, objectId));
+
+        return categoriaService.crear(
+                categoria,
+                contexto.getInstitucionId());
     }
 }

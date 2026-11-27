@@ -22,6 +22,9 @@ public class Categoria {
     @Column(nullable = false)
     private Boolean activa;
 
+    @Column(name = "institucion_id", nullable = false, updatable = false)
+    private UUID institucionId;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 
@@ -73,6 +76,14 @@ public class Categoria {
 
     public void setActiva(Boolean activa) {
         this.activa = activa;
+    }
+
+    public UUID getInstitucionId() {
+        return institucionId;
+    }
+
+    public void setInstitucionId(UUID institucionId) {
+        this.institucionId = institucionId;
     }
 
     public OffsetDateTime getCreatedAt() {

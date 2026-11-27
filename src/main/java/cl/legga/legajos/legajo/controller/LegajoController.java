@@ -199,6 +199,24 @@ public class LegajoController {
         }
 
         // =========================================================
+        // REACTIVAR LEGAJO
+        // =========================================================
+
+        @PatchMapping("/{id}/reactivar")
+        public Legajo reactivar(
+                        @PathVariable UUID id,
+                        @RequestHeader("X-LEGGA-TENANT-ID") String tenantId,
+                        @RequestHeader("X-LEGGA-OBJECT-ID") String objectId) {
+
+                var contexto = obtenerContexto(tenantId, objectId);
+                validarPermiso(contexto, "F-10-REACTIVAR");
+
+                return legajoService.reactivar(
+                                id,
+                                contexto.getInstitucionId(),
+                                contexto.getCorreo());
+        }
+        // =========================================================
         // IDENTIDAD Y AUTORIZACION
         // =========================================================
 

@@ -21,9 +21,6 @@ public class CategoriaService {
         this.categoriaRepository = categoriaRepository;
     }
 
-    /**
-     * Consulta categorías con filtro opcional y paginación.
-     */
     public Page<Categoria> listar(Boolean activa, int page, int size) {
 
         if (page < 0 || size <= 0) {
@@ -45,7 +42,10 @@ public class CategoriaService {
                 .orElseThrow(() -> new RecursoNoEncontradoException("Categoría no encontrada"));
     }
 
-    public Categoria crear(Categoria categoria) {
+    public Categoria crear(Categoria categoria, UUID institucionId) {
+
+        categoria.setActiva(true);
+        categoria.setInstitucionId(institucionId);
 
         if (categoriaRepository.existsByNombreIgnoreCase(
                 categoria.getNombre())) {

@@ -40,7 +40,7 @@ public class LegajoService {
     // =========================================================
 
     /**
-     * Lista los legajos pertenecientes a una institución.
+     * Lista los legajos pertenecientes a una instituciÃ³n.
      */
     @Transactional(readOnly = true)
     public List<Legajo> listarPorInstitucion(UUID institucionId) {
@@ -51,7 +51,7 @@ public class LegajoService {
     }
 
     /**
-     * Lista los legajos de una institución filtrados por estado.
+     * Lista los legajos de una instituciÃ³n filtrados por estado.
      */
     @Transactional(readOnly = true)
     public List<Legajo> listarPorInstitucionYEstado(
@@ -65,9 +65,9 @@ public class LegajoService {
     }
 
     /**
-     * Busca un legajo por su identificador y la institución propietaria.
+     * Busca un legajo por su identificador y la instituciÃ³n propietaria.
      *
-     * Este método conserva la consulta original y se mantiene
+     * Este mÃ©todo conserva la consulta original y se mantiene
      * para los procesos internos que necesitan trabajar con la entidad.
      */
     @Transactional(readOnly = true)
@@ -82,11 +82,11 @@ public class LegajoService {
     /**
      * Busca un legajo y devuelve su DTO de respuesta.
      *
-     * La conversión a DTO ocurre dentro de la transacción activa.
-     * Esto permite acceder a la categoría configurada como LAZY
+     * La conversiÃ³n a DTO ocurre dentro de la transacciÃ³n activa.
+     * Esto permite acceder a la categorÃ­a configurada como LAZY
      * y obtener categoriaId y categoriaNombre correctamente.
      *
-     * Este método debe utilizarse en el endpoint de detalle.
+     * Este mÃ©todo debe utilizarse en el endpoint de detalle.
      */
     @Transactional(readOnly = true)
     public LegajoResponseDTO buscarPorIdEInstitucionDTO(
@@ -102,7 +102,7 @@ public class LegajoService {
     }
 
     /**
-     * Busca legajos por título y categoría dentro de una institución.
+     * Busca legajos por tÃ­tulo y categorÃ­a dentro de una instituciÃ³n.
      */
     @Transactional(readOnly = true)
     public List<Legajo> buscarPorInstitucion(
@@ -123,7 +123,7 @@ public class LegajoService {
     // =========================================================
 
     /**
-     * Crea un nuevo legajo asociado a una institución y categoría.
+     * Crea un nuevo legajo asociado a una instituciÃ³n y categorÃ­a.
      */
     @Transactional
     public Legajo crear(
@@ -233,7 +233,7 @@ public class LegajoService {
 
             if (!(valor instanceof String titulo)) {
                 throw new IllegalArgumentException(
-                        "El título debe ser un texto");
+                        "El tÃ­tulo debe ser un texto");
             }
 
             validarTitulo(titulo);
@@ -245,7 +245,7 @@ public class LegajoService {
 
             if (valor != null && !(valor instanceof String)) {
                 throw new IllegalArgumentException(
-                        "La descripción debe ser un texto");
+                        "La descripciÃ³n debe ser un texto");
             }
 
             String descripcion = (String) valor;
@@ -258,7 +258,7 @@ public class LegajoService {
 
             if (!(valor instanceof String categoriaTexto)) {
                 throw new IllegalArgumentException(
-                        "categoriaId debe ser un UUID válido");
+                        "categoriaId debe ser un UUID vÃ¡lido");
             }
 
             UUID categoriaId;
@@ -267,7 +267,7 @@ public class LegajoService {
                 categoriaId = UUID.fromString(categoriaTexto);
             } catch (IllegalArgumentException ex) {
                 throw new IllegalArgumentException(
-                        "categoriaId debe ser un UUID válido");
+                        "categoriaId debe ser un UUID vÃ¡lido");
             }
 
             legajo.setCategoria(obtenerCategoriaActiva(categoriaId));
@@ -301,7 +301,7 @@ public class LegajoService {
     }
 
     /**
-     * Archiva un legajo validando su institución.
+     * Archiva un legajo validando su instituciÃ³n.
      */
     @Transactional
     public Legajo archivar(UUID id, UUID institucionId, String actor) {
@@ -312,7 +312,7 @@ public class LegajoService {
     }
 
     /**
-     * Ejecuta la operación de archivado.
+     * Ejecuta la operaciÃ³n de archivado.
      */
     private Legajo archivarLegajo(Legajo legajo) {
 
@@ -327,6 +327,35 @@ public class LegajoService {
     }
 
     // =========================================================
+    // =========================================================
+    // REACTIVACION
+    // =========================================================
+
+    /**
+     * Reactiva un legajo validando su instituciÃ³n.
+     */
+    @Transactional
+    public Legajo reactivar(UUID id, UUID institucionId, String actor) {
+
+        Legajo legajo = buscarPorIdEInstitucion(id, institucionId);
+
+        return reactivarLegajo(legajo);
+    }
+
+    /**
+     * Ejecuta la operaciÃ³n de reactivaciÃ³n.
+     */
+    private Legajo reactivarLegajo(Legajo legajo) {
+
+        if (!"ARCHIVADO".equals(legajo.getEstado())) {
+            throw new IllegalArgumentException(
+                    "Solo se puede reactivar un legajo archivado");
+        }
+
+        legajo.setEstado("ACTIVO");
+
+        return legajoRepository.save(legajo);
+    }
     // COMPATIBILIDAD TEMPORAL CON EL CONTROLADOR ACTUAL
     // =========================================================
 
@@ -363,61 +392,61 @@ public class LegajoService {
     // =========================================================
 
     /**
-     * Obtiene una categoría y verifica que se encuentre activa.
+     * Obtiene una categorÃ­a y verifica que se encuentre activa.
      */
     private Categoria obtenerCategoriaActiva(UUID categoriaId) {
 
         if (categoriaId == null) {
             throw new IllegalArgumentException(
-                    "La categoría es obligatoria");
+                    "La categorÃ­a es obligatoria");
         }
 
         Categoria categoria = categoriaRepository.findById(categoriaId)
-                .orElseThrow(() -> new IllegalArgumentException("Categoría no encontrada"));
+                .orElseThrow(() -> new IllegalArgumentException("CategorÃ­a no encontrada"));
 
         if (!Boolean.TRUE.equals(categoria.getActiva())) {
             throw new IllegalArgumentException(
-                    "No se puede utilizar una categoría inactiva");
+                    "No se puede utilizar una categorÃ­a inactiva");
         }
 
         return categoria;
     }
 
     /**
-     * Verifica que se haya informado una institución.
+     * Verifica que se haya informado una instituciÃ³n.
      */
     private void validarInstitucion(UUID institucionId) {
 
         if (institucionId == null) {
             throw new IllegalArgumentException(
-                    "La institución es obligatoria");
+                    "La instituciÃ³n es obligatoria");
         }
     }
 
     /**
-     * Valida el título del legajo.
+     * Valida el tÃ­tulo del legajo.
      */
     private void validarTitulo(String titulo) {
 
         if (titulo == null || titulo.isBlank()) {
             throw new IllegalArgumentException(
-                    "El título es obligatorio");
+                    "El tÃ­tulo es obligatorio");
         }
 
         if (titulo.trim().length() > 150) {
             throw new IllegalArgumentException(
-                    "El título no puede superar los 150 caracteres");
+                    "El tÃ­tulo no puede superar los 150 caracteres");
         }
     }
 
     /**
-     * Valida la longitud de la descripción.
+     * Valida la longitud de la descripciÃ³n.
      */
     private void validarDescripcion(String descripcion) {
 
         if (descripcion != null && descripcion.length() > 500) {
             throw new IllegalArgumentException(
-                    "La descripción no puede superar los 500 caracteres");
+                    "La descripciÃ³n no puede superar los 500 caracteres");
         }
     }
 
@@ -428,12 +457,12 @@ public class LegajoService {
 
         if (!"ACTIVO".equals(estado) && !"ARCHIVADO".equals(estado)) {
             throw new IllegalArgumentException(
-                    "Estado de legajo inválido");
+                    "Estado de legajo invÃ¡lido");
         }
     }
 
     /**
-     * Registra el evento de auditoría en el servicio Outbox.
+     * Registra el evento de auditorÃ­a en el servicio Outbox.
      */
     private void registrarAuditoria(
             String accion,
@@ -465,7 +494,7 @@ public class LegajoService {
     }
 
     /**
-     * Escapa caracteres especiales para construir un JSON válido.
+     * Escapa caracteres especiales para construir un JSON vÃ¡lido.
      */
     private String escaparJson(String valor) {
 
@@ -486,8 +515,8 @@ public class LegajoService {
     // =========================================================
 
     /**
-     * Consulta legajos paginados y filtrados por institución,
-     * título, categoría y estado.
+     * Consulta legajos paginados y filtrados por instituciÃ³n,
+     * tÃ­tulo, categorÃ­a y estado.
      *
      * Cada resultado se convierte a LegajoResponseDTO para
      * entregar categoriaId y categoriaNombre al consumidor.
@@ -505,7 +534,7 @@ public class LegajoService {
 
         if (page < 0 || size < 1 || size > 100) {
             throw new IllegalArgumentException(
-                    "Parámetros de paginación inválidos");
+                    "ParÃ¡metros de paginaciÃ³n invÃ¡lidos");
         }
 
         if (estado != null) {
@@ -515,6 +544,16 @@ public class LegajoService {
         final String tituloFiltro = (titulo == null || titulo.isBlank())
                 ? null
                 : titulo.trim().toLowerCase();
+
+        UUID idFiltro = null;
+        if (titulo != null && !titulo.isBlank()) {
+            try {
+                idFiltro = UUID.fromString(titulo.trim());
+            } catch (IllegalArgumentException ignored) {
+                // La búsqueda no corresponde a un UUID.
+            }
+        }
+        final UUID idFiltroFinal = idFiltro;
 
         final UUID categoriaFiltro = categoriaId;
         final String estadoFiltro = estado;
@@ -527,9 +566,17 @@ public class LegajoService {
                     cb.equal(root.get("institucionId"), institucionId));
 
             if (tituloFiltro != null) {
-                predicates.add(cb.like(
+                var tituloPredicate = cb.like(
                         cb.lower(root.<String>get("titulo")),
-                        "%" + tituloFiltro + "%"));
+                        "%" + tituloFiltro + "%");
+
+                if (idFiltroFinal != null) {
+                    predicates.add(cb.or(
+                            tituloPredicate,
+                            cb.equal(root.get("id"), idFiltroFinal)));
+                } else {
+                    predicates.add(tituloPredicate);
+                }
             }
 
             if (categoriaFiltro != null) {
@@ -554,3 +601,4 @@ public class LegajoService {
                 .map(LegajoResponseDTO::new);
     }
 }
+
